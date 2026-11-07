@@ -1,0 +1,11 @@
+# Сборка
+bin/
+obj/
+# IDE
+.idea/
+.vs/
+*.user
+*.suo
+# Прочее
+*.log
+appsettings.Local.json
