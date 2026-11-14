@@ -4,7 +4,7 @@ using TableTennis.Infrastructure.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<TableTennisDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("TableTennisDbContext")));
 
 var app = builder.Build();
 

@@ -2,11 +2,9 @@ using TableTennis.Domain.Enums;
 
 namespace TableTennis.Domain.Entities;
 
-public class User
+public class User : BaseEntity
 {
-    public Guid Id { get; set; }
-
-    public int RoleId { get; set; }
+    public Guid RoleId { get; set; }
     public Role Role { get; set; } = null!;
 
     // Рекурсивная связь: тренер и его спортсмены хранятся в одной таблице
@@ -29,10 +27,7 @@ public class User
     public string? InviteCode { get; set; }   // чтобы спортсмен "забрал" профиль
     public DateTime CreatedAt { get; set; }
 
-    // Турниры, которые создал этот пользователь как организатор
     public ICollection<Competition> OrganizedCompetitions { get; set; } = new List<Competition>();
-    // Заявки, где пользователь выступает спортсменом
     public ICollection<Registration> Registrations { get; set; } = new List<Registration>();
-    // Заявки, которые подал этот пользователь как тренер
     public ICollection<Registration> SubmittedRegistrations { get; set; } = new List<Registration>();
 }

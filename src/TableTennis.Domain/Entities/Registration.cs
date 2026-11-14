@@ -3,10 +3,8 @@ using TableTennis.Domain.Enums;
 namespace TableTennis.Domain.Entities;
 
 // Связующая сущность M:N между спортсменами (Users) и турнирами (Competition)
-public class Registration
+public class Registration : BaseEntity
 {
-    public Guid Id { get; set; }
-
     public Guid CompetitionId { get; set; }
     public Competition Competition { get; set; } = null!;
 

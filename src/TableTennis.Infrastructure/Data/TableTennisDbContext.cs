@@ -5,120 +5,130 @@ namespace TableTennis.Infrastructure.Data;
 
 public class TableTennisDbContext : DbContext
 {
-    public TableTennisDbContext(DbContextOptions<TableTennisDbContext> options)
-        : base(options) { }
-
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Competition> Competitions => Set<Competition>();
     public DbSet<Registration> Registrations => Set<Registration>();
 
+    public TableTennisDbContext(DbContextOptions<TableTennisDbContext> options)
+        : base(options)
+    {
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // ---------- Roles ----------
+        // ---------- roles ----------
         modelBuilder.Entity<Role>(e =>
         {
-            e.ToTable("Roles");
-            e.Property(r => r.Name).HasMaxLength(30).IsRequired();
-            e.HasIndex(r => r.Name).IsUnique();
+            e.ToTable("roles");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).ValueGeneratedOnAdd();
 
+            e.Property(x => x.Name).HasMaxLength(30).IsRequired();
+            e.HasIndex(x => x.Name).IsUnique();
+
+            // Начальные данные: у HasData значения должны быть постоянными
             e.HasData(
-                new Role { Id = RoleIds.Sportsman, Name = "Sportsman" },
-                new Role { Id = RoleIds.Coach, Name = "Coach" },
-                new Role { Id = RoleIds.Organizer, Name = "Organizer" });
+                new Role { Id = Guid.Parse("11111111-1111-1111-1111-111111111111"), Name = "Sportsman" },
+                new Role { Id = Guid.Parse("22222222-2222-2222-2222-222222222222"), Name = "Coach" },
+                new Role { Id = Guid.Parse("33333333-3333-3333-3333-333333333333"), Name = "Organizer" });
         });
 
-        // ---------- Users ----------
+        // ---------- users ----------
         modelBuilder.Entity<User>(e =>
         {
-            e.ToTable("Users", t =>
+            e.ToTable("users", t =>
             {
-                // Тренеру и организатору email обязателен, спортсмену нет
-                t.HasCheckConstraint("CK_Users_EmailRequired",
-                    $"\"RoleId\" = {RoleIds.Sportsman} OR \"Email\" IS NOT NULL");
-                // Тренер указывается только у спортсмена
-                t.HasCheckConstraint("CK_Users_CoachOnlyForSportsman",
-                    $"\"RoleId\" = {RoleIds.Sportsman} OR \"CoachId\" IS NULL");
                 // Нельзя быть тренером самому себе
-                t.HasCheckConstraint("CK_Users_NotOwnCoach",
+                t.HasCheckConstraint("CK_users_not_own_coach",
                     "\"CoachId\" IS NULL OR \"CoachId\" <> \"Id\"");
             });
 
-            e.Property(u => u.Surname).HasMaxLength(100).IsRequired();
-            e.Property(u => u.Name).HasMaxLength(100).IsRequired();
-            e.Property(u => u.Patronymic).HasMaxLength(100);
-            e.Property(u => u.City).HasMaxLength(100);
-            e.Property(u => u.Email).HasMaxLength(200);
-            e.Property(u => u.Nickname).HasMaxLength(200);
-            e.Property(u => u.Category).HasMaxLength(100);
-            e.Property(u => u.InviteCode).HasMaxLength(20);
-            e.Property(u => u.Gender).HasConversion<string>().HasMaxLength(10);
-            e.Property(u => u.CreatedAt).HasDefaultValueSql("now()");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).ValueGeneratedOnAdd();
 
-            // В PostgreSQL несколько NULL в уникальном индексе допускаются
-            e.HasIndex(u => u.Email).IsUnique();
-            e.HasIndex(u => u.InviteCode).IsUnique();
+            e.Property(x => x.Surname).HasMaxLength(100).IsRequired();
+            e.Property(x => x.Name).HasMaxLength(100).IsRequired();
+            e.Property(x => x.Patronymic).HasMaxLength(100);
+            e.Property(x => x.City).HasMaxLength(100);
+            e.Property(x => x.Email).HasMaxLength(200);
+            e.Property(x => x.Nickname).HasMaxLength(200);
+            e.Property(x => x.Category).HasMaxLength(100);
+            e.Property(x => x.InviteCode).HasMaxLength(20);
+            e.Property(x => x.CreatedAt).HasDefaultValueSql("now()");
+            // Gender хранится числом: 0 (Female) или 1 (Male)
 
-            // Role 1:M Users
-            e.HasOne(u => u.Role)
-                .WithMany(r => r.Users)
-                .HasForeignKey(u => u.RoleId)
+            // Уникальные значения (в PostgreSQL несколько NULL допускаются)
+            e.HasIndex(x => x.Nickname).IsUnique();
+            e.HasIndex(x => x.Email).IsUnique();
+            e.HasIndex(x => x.InviteCode).IsUnique();
+
+            // roles 1:M users
+            e.HasOne(x => x.Role)
+                .WithMany(x => x.Users)
+                .HasForeignKey(x => x.RoleId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Рекурсивная связь: тренер 1:M спортсмены
-            e.HasOne(u => u.Coach)
-                .WithMany(u => u.Athletes)
-                .HasForeignKey(u => u.CoachId)
+            e.HasOne(x => x.Coach)
+                .WithMany(x => x.Athletes)
+                .HasForeignKey(x => x.CoachId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
-        // ---------- Competitions ----------
+        // ---------- competitions ----------
         modelBuilder.Entity<Competition>(e =>
         {
-            e.ToTable("Competitions", t =>
+            e.ToTable("competitions", t =>
             {
-                t.HasCheckConstraint("CK_Competitions_Dates", "\"EndDate\" >= \"StartDate\"");
-                t.HasCheckConstraint("CK_Competitions_BestOf", "\"BestOf\" IN (3, 5, 7)");
+                t.HasCheckConstraint("CK_competitions_dates", "\"EndDate\" >= \"StartDate\"");
+                t.HasCheckConstraint("CK_competitions_best_of", "\"BestOf\" IN (3, 5, 7)");
             });
 
-            e.Property(c => c.Name).HasMaxLength(200).IsRequired();
-            e.Property(c => c.Place).HasMaxLength(200).IsRequired();
-            e.Property(c => c.DrawType).HasConversion<string>().HasMaxLength(20);
-            e.Property(c => c.Status).HasConversion<string>().HasMaxLength(20);
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).ValueGeneratedOnAdd();
 
-            // Users (организатор) 1:M Competitions
-            e.HasOne(c => c.Organizer)
-                .WithMany(u => u.OrganizedCompetitions)
-                .HasForeignKey(c => c.OrganizerId)
+            e.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            e.Property(x => x.Place).HasMaxLength(200).IsRequired();
+            e.Property(x => x.DrawType).HasConversion<string>().HasMaxLength(20);
+            e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+
+            // users (организатор) 1:M competitions
+            e.HasOne(x => x.Organizer)
+                .WithMany(x => x.OrganizedCompetitions)
+                .HasForeignKey(x => x.OrganizerId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // ---------- Registrations (M:N Users <-> Competitions) ----------
+        // ---------- registrations (M:N users <-> competitions) ----------
         modelBuilder.Entity<Registration>(e =>
         {
-            e.ToTable("Registrations");
+            e.ToTable("registrations");
 
-            e.Property(r => r.Status).HasConversion<string>().HasMaxLength(20);
-            e.Property(r => r.SubmittedAt).HasDefaultValueSql("now()");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).ValueGeneratedOnAdd();
+
+            e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+            e.Property(x => x.SubmittedAt).HasDefaultValueSql("now()");
 
             // Один спортсмен не может подать две заявки на один турнир
-            e.HasIndex(r => new { r.CompetitionId, r.SportsmanId }).IsUnique();
+            e.HasIndex(x => new { x.CompetitionId, x.SportsmanId }).IsUnique();
 
-            e.HasOne(r => r.Competition)
-                .WithMany(c => c.Registrations)
-                .HasForeignKey(r => r.CompetitionId)
+            e.HasOne(x => x.Competition)
+                .WithMany(x => x.Registrations)
+                .HasForeignKey(x => x.CompetitionId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            e.HasOne(r => r.Sportsman)
-                .WithMany(u => u.Registrations)
-                .HasForeignKey(r => r.SportsmanId)
+            e.HasOne(x => x.Sportsman)
+                .WithMany(x => x.Registrations)
+                .HasForeignKey(x => x.SportsmanId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            e.HasOne(r => r.Coach)
-                .WithMany(u => u.SubmittedRegistrations)
-                .HasForeignKey(r => r.CoachId)
+            e.HasOne(x => x.Coach)
+                .WithMany(x => x.SubmittedRegistrations)
+                .HasForeignKey(x => x.CoachId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
     }
