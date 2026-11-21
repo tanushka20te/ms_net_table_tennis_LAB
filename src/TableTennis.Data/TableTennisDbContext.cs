@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using TableTennis.Domain.Entities;
+using TableTennis.Data.Entities;
 
-namespace TableTennis.Infrastructure.Data;
+namespace TableTennis.Data;
 
 public class TableTennisDbContext : DbContext
 {
@@ -10,16 +10,12 @@ public class TableTennisDbContext : DbContext
     public DbSet<Competition> Competitions => Set<Competition>();
     public DbSet<Registration> Registrations => Set<Registration>();
 
-    public TableTennisDbContext(DbContextOptions<TableTennisDbContext> options)
-        : base(options)
-    {
-    }
+    public TableTennisDbContext(DbContextOptions<TableTennisDbContext> options):base(options) {}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        // ---------- roles ----------
+        //roles 
         modelBuilder.Entity<Role>(e =>
         {
             e.ToTable("roles");
@@ -29,14 +25,14 @@ public class TableTennisDbContext : DbContext
             e.Property(x => x.Name).HasMaxLength(30).IsRequired();
             e.HasIndex(x => x.Name).IsUnique();
 
-            // Начальные данные: у HasData значения должны быть постоянными
+
             e.HasData(
                 new Role { Id = Guid.Parse("11111111-1111-1111-1111-111111111111"), Name = "Sportsman" },
                 new Role { Id = Guid.Parse("22222222-2222-2222-2222-222222222222"), Name = "Coach" },
                 new Role { Id = Guid.Parse("33333333-3333-3333-3333-333333333333"), Name = "Organizer" });
         });
 
-        // ---------- users ----------
+        //users 
         modelBuilder.Entity<User>(e =>
         {
             e.ToTable("users", t =>
@@ -58,9 +54,7 @@ public class TableTennisDbContext : DbContext
             e.Property(x => x.Category).HasMaxLength(100);
             e.Property(x => x.InviteCode).HasMaxLength(20);
             e.Property(x => x.CreatedAt).HasDefaultValueSql("now()");
-            // Gender хранится числом: 0 (Female) или 1 (Male)
-
-            // Уникальные значения (в PostgreSQL несколько NULL допускаются)
+            
             e.HasIndex(x => x.Nickname).IsUnique();
             e.HasIndex(x => x.Email).IsUnique();
             e.HasIndex(x => x.InviteCode).IsUnique();
@@ -78,7 +72,7 @@ public class TableTennisDbContext : DbContext
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
-        // ---------- competitions ----------
+        //competitions 
         modelBuilder.Entity<Competition>(e =>
         {
             e.ToTable("competitions", t =>
@@ -102,7 +96,7 @@ public class TableTennisDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // ---------- registrations (M:N users <-> competitions) ----------
+        //registrations (M:N users <-> competitions) 
         modelBuilder.Entity<Registration>(e =>
         {
             e.ToTable("registrations");

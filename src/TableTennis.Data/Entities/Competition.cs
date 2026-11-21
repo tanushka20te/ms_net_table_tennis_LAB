@@ -1,6 +1,6 @@
-using TableTennis.Domain.Enums;
+using TableTennis.Common.Enums;
 
-namespace TableTennis.Domain.Entities;
+namespace TableTennis.Data.Entities;
 
 public class Competition : BaseEntity
 {

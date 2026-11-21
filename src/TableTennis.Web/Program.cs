@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using TableTennis.Infrastructure.Data;
+using TableTennis.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,6 +1,6 @@
-using TableTennis.Domain.Enums;
+using TableTennis.Common.Enums;
 
-namespace TableTennis.Domain.Entities;
+namespace TableTennis.Data.Entities;
 
 public class User : BaseEntity
 {
@@ -24,7 +24,7 @@ public class User : BaseEntity
 
     public int? Rating { get; set; }          // только у спортсменов
     public string? Category { get; set; }     // разряд
-    public string? InviteCode { get; set; }   // чтобы спортсмен "забрал" профиль
+    public string? InviteCode { get; set; }   // чтобы спортсмен забрал профиль
     public DateTime CreatedAt { get; set; }
 
     public ICollection<Competition> OrganizedCompetitions { get; set; } = new List<Competition>();

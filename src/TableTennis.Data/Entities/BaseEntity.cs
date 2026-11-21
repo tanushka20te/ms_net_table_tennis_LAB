@@ -1,4 +1,4 @@
-namespace TableTennis.Domain.Entities;
+namespace TableTennis.Data.Entities;
 
 public abstract class BaseEntity
 {

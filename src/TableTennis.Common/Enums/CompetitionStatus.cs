@@ -1,4 +1,4 @@
-namespace TableTennis.Domain.Enums;
+namespace TableTennis.Common.Enums;
 
 public enum CompetitionStatus
 {

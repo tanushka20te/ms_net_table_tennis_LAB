@@ -15,8 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TableTennis.Domain\TableTennis.Domain.csproj" />
-    <ProjectReference Include="..\TableTennis.Infrastructure\TableTennis.Infrastructure.csproj" />
+    <ProjectReference Include="..\TableTennis.Data\TableTennis.Data.csproj" />
   </ItemGroup>
 
 </Project>

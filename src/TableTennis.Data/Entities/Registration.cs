@@ -1,6 +1,6 @@
-using TableTennis.Domain.Enums;
+using TableTennis.Common.Enums;
 
-namespace TableTennis.Domain.Entities;
+namespace TableTennis.Data.Entities;
 
 // Связующая сущность M:N между спортсменами (Users) и турнирами (Competition)
 public class Registration : BaseEntity
